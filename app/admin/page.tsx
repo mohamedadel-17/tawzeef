@@ -44,7 +44,6 @@ export default async function HomeAdminPage() {
           ),
         )}
       </div>
-      0
       {allJobs.length === 0 && (
         <div className="text-center py-10 text-muted-foreground">
           No jobs posted yet.

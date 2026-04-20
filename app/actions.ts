@@ -46,7 +46,7 @@ export async function loginAction(prevState: any, formData: FormData) {
     await signIn("credentials", {
       email: formData.get("email"),
       password: formData.get("password"),
-      redirectTo: "/dashboard",
+      redirectTo: "/home",
     });
   } catch (error: any) {
     if (error.message === "NEXT_REDIRECT") {

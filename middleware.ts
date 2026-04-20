@@ -8,13 +8,16 @@ export default auth((req) => {
   const isApiAuthRoute = nextUrl.pathname.startsWith("/api/auth");
   const isPublicRoute = ["/login", "/signup"].includes(nextUrl.pathname);
   
-  const isProtectedRoute = nextUrl.pathname.startsWith("/dashboard") || nextUrl.pathname.startsWith("/admin");
+  const isProtectedRoute = nextUrl.pathname.startsWith("/home") || nextUrl.pathname.startsWith("/admin");
 
   if (isApiAuthRoute) return;
 
   if (isPublicRoute) {
-    if (isLoggedIn) {
-      return Response.redirect(new URL("/dashboard", nextUrl));
+    if (isLoggedIn && (req.auth?.user as any)?.role === "admin") {
+      return Response.redirect(new URL("/admin", nextUrl));
+    }
+    if (isLoggedIn && (req.auth?.user as any)?.role === "user") {
+      return Response.redirect(new URL("/home", nextUrl));
     }
     return;
   }
@@ -24,7 +27,7 @@ export default auth((req) => {
   }
 
   if (nextUrl.pathname.startsWith("/admin") && (req.auth?.user as any)?.role !== "admin") {
-    return Response.redirect(new URL("/dashboard", nextUrl));
+    return Response.redirect(new URL("/home", nextUrl));
   }
 
   return; 

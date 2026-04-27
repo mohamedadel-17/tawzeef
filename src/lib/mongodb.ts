@@ -1,39 +1,47 @@
-import mongoose, { Mongoose } from "mongoose";
+import mongoose from "mongoose";
 
-interface GlobalMongoose {
-  conn: Mongoose | null;
-  promise: Promise<Mongoose> | null;
-}
+const MONGODB_URI = process.env.MONGODB_URI!;
 
-declare global {
-  var mongoose: GlobalMongoose | undefined;
-}
-
-// Environment check for MongoDB URI
-const MONGODB_URI = process.env.MONGODB_URI || "";
 if (!MONGODB_URI) {
-  throw new Error("Please define the MONGODB_URI environment variable");
+  throw new Error("Please define the MONGODB_URI environment variable inside .env");
 }
 
-// Caching logic
-// The first time we run `mongoose`, it will be undefined, so we create it
-// Then with any Save → we use the same connection from `global` instead of opening a new one
-let cached = global.mongoose; 
+/**
+ * Global is used here to maintain a cached connection across hot reloads
+ * in development. This prevents connections from growing exponentially
+ * during API Route usage.
+ */
+let cached = (global as any).mongoose;
 
 if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
+  cached = (global as any).mongoose = { conn: null, promise: null };
 }
 
 async function connectDB() {
-  if (cached!.conn) return cached!.conn;
-
-  if (!cached!.promise) {
-    // cached!.promise = mongoose.connect(MONGODB_URI).then((m) => m);
-    cached!.promise = mongoose.connect(MONGODB_URI);
+  if (cached.conn) {
+    return cached.conn;
   }
-  
-  cached!.conn = await cached!.promise;
-  return cached!.conn;
+
+  if (!cached.promise) {
+    const opts = {
+      bufferCommands: false,
+    };
+
+    // نستخدم mongoose المستوردة من المكتبة مباشرة
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+      console.log("✅ New MongoDB Connection Established");
+      return mongoose;
+    });
+  }
+
+  try {
+    cached.conn = await cached.promise;
+  } catch (e) {
+    cached.promise = null; // نمسح الـ promise لو فشل عشان يحاول تاني
+    throw e;
+  }
+
+  return cached.conn;
 }
 
 export default connectDB;

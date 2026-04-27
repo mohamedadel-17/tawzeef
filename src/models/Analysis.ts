@@ -1,14 +1,16 @@
 import mongoose, { Schema, model, models } from "mongoose";
 
 const AnalysisSchema = new Schema({
-  applicationId: { type: Number, required: true }, // This is the ID that exists in SQLite
-  fullCvText: String,
+  applicationId: { type: Number, required: true },
+  cvText: String,
   aiFeedback: {
     strengths: [String],
     weaknesses: [String],
     recommendation: String,
+    decisionSummary: String,
+    improvementTip: String
   },
-  rawAiResponse: Object, // To store the complete AI response for any future purpose
+  rawAiResponse: Object,
 }, { timestamps: true });
 
 const Analysis = models.Analysis || model("Analysis", AnalysisSchema);

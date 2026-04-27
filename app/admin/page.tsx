@@ -17,7 +17,7 @@ export default async function HomeAdminPage() {
   const allJobs = await db.select().from(jobs).orderBy(desc(jobs.id));
 
   return (
-    <div className="p-8 flex flex-col items-center">
+    <div className="flex flex-col items-center">
       {/* nav bar */}
       <div className="w-full flex justify-between items-center">
         <h1 className="text-2xl font-bold">Admin Dashboard</h1>
@@ -35,8 +35,9 @@ export default async function HomeAdminPage() {
           </DialogContent>
         </Dialog>
       </div>
+
       {/* jobs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full mt-6 px-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 w-full mt-6 px-4">
         {allJobs.map(
           (job) => (
             console.log("Rendering job:", job),

@@ -39,7 +39,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useActionState, useTransition } from "react";
-import { createJobAction } from "@/app/actions";
+import { createJobAction } from "@/lib/actions/jobs";
 
 const formSchema = z.object({
   title: z

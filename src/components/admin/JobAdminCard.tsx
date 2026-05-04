@@ -27,11 +27,11 @@ export function JobAdminCard({ job }: { job: any }) {
       </CardContent>
       <CardFooter>
         <Field orientation="horizontal">
-          <Button type="button" variant="outline" onClick={() => alert("Edit")} disabled>
+          <Button type="button" variant="outline" disabled>
             Edit
           </Button>
-          <Button type="submit" form="form-rhf-demo">
-            View Details
+          <Button type="button" disabled>
+            Remove
           </Button>
         </Field>
       </CardFooter>

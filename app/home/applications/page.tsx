@@ -2,7 +2,7 @@ import { ApplicationsCard } from "@/src/components/admin/ApplicationsCard";
 import { db } from "@/src/db";
 import { applications, jobs } from "@/src/db/schema";
 import { desc } from "drizzle-orm";
-import { getUserApplications } from "@/app/actions";
+import { getUserApplications } from "@/lib/actions/applications";
 import { ApplicationCard } from "@/src/components/user/ApplicationCard";
 
 export default async function ApplicationsPage() {

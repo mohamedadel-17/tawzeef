@@ -62,7 +62,12 @@ export async function ApplicationsCard({ application }: { application: any }) {
           </p>
         </CardContent>
         <CardFooter>
-          <Link className="w-full" href={`/home/apply/${job.id}`}>
+          <Link
+            className="w-full"
+            href={`/app-details/${application.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <Button className="w-full">View Details</Button>
           </Link>
         </CardFooter>

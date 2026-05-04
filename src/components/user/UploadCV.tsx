@@ -2,7 +2,7 @@
 
 import { toast } from "sonner";
 import { Dropzone } from "@/components/ui/dropzone";
-import { applyForJobAction } from "@/app/actions";
+import { applyForJobAction } from "@/lib/actions/applications";
 import { Button } from "@/components/ui/button";
 import { useActionState, useEffect } from "react";
 

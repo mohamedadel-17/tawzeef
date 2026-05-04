@@ -2,6 +2,7 @@ import mongoose, { Schema, model, models } from "mongoose";
 
 const AnalysisSchema = new Schema({
   applicationId: { type: Number, required: true },
+  cvUrl: String,
   cvText: String,
   aiFeedback: {
     strengths: [String],

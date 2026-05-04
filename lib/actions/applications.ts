@@ -9,7 +9,15 @@ import { auth } from "@/src/auth";
 import { revalidatePath } from "next/cache";
 import connectDB from "@/src/lib/mongodb";
 import Analysis from "@/src/models/Analysis";
-import { redirect } from "next/navigation";
+// declare module 'cloudinary';
+import { v2 as cloudinary } from 'cloudinary';
+
+// cloudinary setup
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_NAME,
+  api_key: process.env.CLOUDINARY_KEY,
+  api_secret: process.env.CLOUDINARY_SECRET,
+});
 
 // apply for a job
 export const applyForJobAction = async (prevState: any, formData: FormData) => {
@@ -32,8 +40,21 @@ export const applyForJobAction = async (prevState: any, formData: FormData) => {
   //* Extract the uploaded file from the form data
   const file = formData.get("cv") as File;
   if (!file || file.size === 0) return { error: "Please upload the file" };
+
+
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
+  // Save CV as pdf on cloudinary
+  const result = await new Promise((resolve, reject) => {
+    cloudinary.uploader.upload_stream(
+      { resource_type: "raw", folder: "resumes" },
+      (error: any, result: any) => {
+        if (error) reject(error);
+        resolve(result);
+      }
+    ).end(buffer);
+  });
+  const fileUrl = (result as any).secure_url;
   const cvText = await new Promise<string>((resolve, reject) => {
     const pdfParser = new (PDFParser as any)(null, 1);
     pdfParser.on("pdfParser_dataError", (errData: any) =>
@@ -110,6 +131,7 @@ export const applyForJobAction = async (prevState: any, formData: FormData) => {
 
     await Analysis.create({
       applicationId: newApplication.insertedId,
+      cvUrl: fileUrl,
       cvText: cvText,
       aiFeedback: {
         summary: aiResponse.summary,
@@ -173,7 +195,7 @@ export async function getUserApplications() {
       };
     })
   );
-  
+
   return combinedData;
 }
 // end get applications for a special user

@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatusSwitcher } from "@/src/components/admin/StatusSwitcher";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 export default async function ApplicationDetailsPage({
   params,
@@ -111,6 +112,15 @@ export default async function ApplicationDetailsPage({
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Download CV */}
+      <div className="w-full">
+        <Button asChild variant="default" className="mt-2">
+          <a href={aiFeedback.cvUrl} target="_blank" download>
+            Download CV
+          </a>
+        </Button>
+      </div>
     </div>
   );
 }

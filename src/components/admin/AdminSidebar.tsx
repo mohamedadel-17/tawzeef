@@ -32,7 +32,9 @@ export function AdminSidebar() {
   const pathname = usePathname();
   return (
     <Sidebar>
-      <SidebarHeader className="bg-background p-4 font-bold text-xl">Tawzeef</SidebarHeader>
+      <SidebarHeader className="bg-background p-4 font-bold text-xl">
+        Tawzeef
+      </SidebarHeader>
       <SidebarContent className="bg-background text-foreground">
         <SidebarGroup>
           <SidebarGroupContent>
@@ -40,11 +42,11 @@ export function AdminSidebar() {
               {menuItems.map((item) => {
                 const isActive = pathname === item.url;
                 return (
-                  <SidebarMenuItem key={item.title}>
+                  <SidebarMenuItem key={item.title}>                    
                     <SidebarMenuButton
                       asChild
                       isActive={isActive}
-                      className="data-[active=true]:bg-foreground data-[active=true]:text-muted hover:bg-sidebar-ring transition-colors"
+                      className="data-[active=true]:bg-foreground data-[active=true]:text-muted hover:bg-sidebar-ring transition-colors m-0.5"
                     >
                       <Link href={item.url}>
                         <item.icon className="size-5" />

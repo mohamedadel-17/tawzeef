@@ -1,4 +1,4 @@
-import { JobUserCard } from "@/src/components/JobUserCard";
+import { JobUserCard } from "@/src/components/user/JobUserCard";
 import { db } from "@/src/db";
 import { jobs } from "@/src/db/schema";
 import { desc } from "drizzle-orm";

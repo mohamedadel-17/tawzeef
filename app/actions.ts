@@ -201,7 +201,7 @@ export const applyForJobAction = async (prevState: any, formData: FormData) => {
     userId: userId,
     jobId: Number(jobId),
     aiScore: score,
-    status: "pending"
+    status: "Under Review"
   }).returning({ insertedId: applications.id });
 
   // MongoDB storage for analysis
@@ -227,10 +227,51 @@ export const applyForJobAction = async (prevState: any, formData: FormData) => {
   return { success: "Application submitted successfully!" };
 }
 
-// "score": number,
-// "status": "Accepted" | "Needs Review" | "Rejected",
-// "summary": "General summary of experiences",
-// "strengths": ["Strength 1", "Strength 2"],
-// "weaknesses": ["Weakness 1", "Weakness 2"],
-// "decisionSummary": "Why was this decision made regarding the applicant?",
-// "improvementTip": "Specific advice for the applicant to improve their future prospects",
+//* get applications for a special user
+export async function getUserApplications() {
+  // get user id
+  const session = await auth();
+  console.log("⛔️ Full Session User:", session?.user);
+  const user = session?.user;
+  console.log("⛔️ Check this ID:", session?.user?.id);
+  if (!user || !user.id) {
+    return [];
+  }
+  const userIdRaw = user?.id;
+  const userId = Number(userIdRaw);
+
+  if (!userIdRaw || isNaN(userId)) {
+    console.error("⛔️ Error: User ID is missing or invalid. ID:", userIdRaw);
+    return [];
+  }
+
+  const sqData = await db
+    .select({
+      id: applications.id,
+      jobId: applications.jobId,
+      status: applications.status,
+      aiScore: applications.aiScore,
+      createdAt: applications.createdAt,
+      jobTitle: jobs.title,
+      companyName: jobs.companyName,
+    })
+    .from(applications)
+    .innerJoin(jobs, eq(applications.jobId, jobs.id))
+    .where(eq(applications.userId, userId));
+
+  if (!sqData || sqData.length === 0) return [];
+
+  await connectDB();
+  const combinedData = await Promise.all(
+    sqData.map(async (app) => {
+      const mongoData = await Analysis.findOne({ applicationId: app.id });
+
+      return {
+        ...app,
+        aiDetails: mongoData ? { improvementTip: mongoData.aiFeedback.improvementTip } : null,
+      };
+    })
+  );
+
+  return combinedData;
+}

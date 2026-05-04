@@ -30,8 +30,8 @@ export const applications = sqliteTable("applications", {
   userId: integer("user_id").references(() => users.id),
   jobId: integer("job_id").references(() => jobs.id),
   status: text("status")
-    .$type<"pending" | "accepted" | "rejected">()
-    .default("pending"),
+    .$type<"Under Review" | "Accepted" | "Rejected">()
+    .default("Under Review"),
   aiScore: integer("ai_score"),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
     () => new Date(),

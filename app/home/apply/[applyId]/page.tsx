@@ -2,7 +2,7 @@ import { db } from "@/src/db";
 import { jobs } from "@/src/db/schema";
 import { eq } from "drizzle-orm";
 import { Badge } from "@/components/ui/badge";
-import UploadCV from "@/src/components/UploadCV";
+import UploadCV from "@/src/components/user/UploadCV";
 
 export default async function ApplyPage({
   params,

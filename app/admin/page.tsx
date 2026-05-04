@@ -1,4 +1,4 @@
-import JobForm from "@/src/components/JobForm";
+import JobForm from "@/src/components/admin/JobForm";
 import { db } from "@/src/db";
 import { jobs } from "@/src/db/schema";
 import { desc } from "drizzle-orm";
@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { JobAdminCard } from "@/src/components/JobAdminCard";
+import { JobAdminCard } from "@/src/components/admin/JobAdminCard";
 
 export default async function HomeAdminPage() {
   const allJobs = await db.select().from(jobs).orderBy(desc(jobs.id));

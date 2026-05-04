@@ -2,13 +2,11 @@ import { ApplicationsCard } from "@/src/components/admin/ApplicationsCard";
 import { db } from "@/src/db";
 import { applications, jobs } from "@/src/db/schema";
 import { desc } from "drizzle-orm";
+import { getUserApplications } from "@/app/actions";
+import { ApplicationCard } from "@/src/components/user/ApplicationCard";
 
 export default async function ApplicationsPage() {
-  const allApplications = await db
-    .select()
-    .from(applications)
-    .orderBy(desc(applications.id));
-
+  const allApplications = await getUserApplications();
   return (
     <div className="flex flex-col items-center">
       {/* title page */}
@@ -20,18 +18,13 @@ export default async function ApplicationsPage() {
         {allApplications.map(
           (application) => (
             console.log("Rendering application:", application),
-            (
-              <ApplicationsCard
-                key={application.id}
-                application={application}
-              />
-            )
+            (<ApplicationCard key={application.id} application={application} />)
           ),
         )}
       </div>
-      {allApplications.length === 0 && (
+      {allApplications.length === null && (
         <div className="text-center py-10 text-muted-foreground">
-          No jobs posted yet.
+          No applications yet.
         </div>
       )}
     </div>

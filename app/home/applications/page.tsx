@@ -22,7 +22,7 @@ export default async function ApplicationsPage() {
           ),
         )}
       </div>
-      {allApplications.length === null && (
+      {allApplications.length === 0 && (
         <div className="text-center py-10 text-muted-foreground">
           No applications yet.
         </div>

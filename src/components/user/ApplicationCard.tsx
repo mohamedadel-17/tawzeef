@@ -15,8 +15,18 @@ import { jobs } from "@/src/db/schema";
 import { eq } from "drizzle-orm";
 import Analysis from "@/src/models/Analysis";
 import connectMongo from "@/src/lib/mongodb";
+import { cn } from "@/lib/utils";
+
+const statusConfig = {
+  Accepted: "bg-green-100 text-green-700 border-green-200",
+  Rejected: "bg-red-100 text-red-700 border-red-200",
+  "Under Review": "bg-yellow-100 text-yellow-700 border-yellow-200",
+};
 
 export async function ApplicationCard({ application }: { application: any }) {
+  const currentStatusStyle =
+    statusConfig[application.status as keyof typeof statusConfig] ||
+    "bg-gray-100 text-gray-700 border-gray-200";
   try {
     const job = await db
       .select()
@@ -25,12 +35,6 @@ export async function ApplicationCard({ application }: { application: any }) {
       .get();
 
     if (!job) return null;
-
-    await connectMongo();
-    const aiFeedback = await Analysis.findOne({
-      applicationId: Number(application.id),
-    });
-    if (!aiFeedback) return null;
 
     return (
       <Card className="w-full pt-6">
@@ -42,9 +46,12 @@ export async function ApplicationCard({ application }: { application: any }) {
       /> */}
         <CardHeader className="flex flex-col">
           <div className="flex items-center justify-between w-full">
-            <CardTitle>{job.title}</CardTitle>
+            <CardTitle className="text-xl font-bold">{job.title}</CardTitle>
             <CardAction>
-              <Badge variant="secondary" className="text-sm">
+              <Badge
+                variant="secondary"
+                className={cn("text-sm", currentStatusStyle)}
+              >
                 {application.status}
               </Badge>
             </CardAction>
@@ -54,17 +61,20 @@ export async function ApplicationCard({ application }: { application: any }) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="line-clamp-4 text-sm text-muted-foreground mb-4">
-            {aiFeedback.aiFeedback.decisionSummary}
-          </p>
           <p className="text-muted-foreground text-sm">
             Applied: {new Date(application.createdAt).toDateString()}
           </p>
         </CardContent>
         <CardFooter>
-          <Link className="w-full" href={`/home/apply/${job.id}`}>
-            <Button className="w-full">View Details</Button>
-          </Link>
+          <Button asChild variant="default" className="mt-2 w-full cursor-pointer">
+            <a
+              href={application.cvUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Open CV
+            </a>
+          </Button>
         </CardFooter>
       </Card>
     );

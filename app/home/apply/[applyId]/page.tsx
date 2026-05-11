@@ -54,10 +54,10 @@ export default async function ApplyPage({
           </div>
 
           {/* Right Side: Application Box */}
-          <div className="sticky top-8 bg-white border border-gray-200 rounded-xl p-6 shadow-sm w-full lg:w-[400px]">
+          <div className="sticky top-8 bg-background border border-gray-200 rounded-xl p-6 shadow-sm w-full lg:w-[400px]">
             <h2 className="text-xl font-bold mb-4">Apply for this position</h2>
 
-            <p className="text-gray-600 text-sm mb-6">
+            <p className="text-muted-foreground text-sm mb-6">
               Submit your application to {job.companyName} for the {job.title}{" "}
               role.
             </p>

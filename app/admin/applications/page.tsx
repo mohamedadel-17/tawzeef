@@ -1,12 +1,13 @@
 import { ApplicationsCard } from "@/src/components/admin/ApplicationsCard";
 import { db } from "@/src/db";
 import { applications, jobs } from "@/src/db/schema";
-import { desc } from "drizzle-orm";
+import { desc, isNull } from "drizzle-orm";
 
 export default async function ApplicationsPage() {
   const allApplications = await db
     .select()
     .from(applications)
+    .where(isNull(applications.deletedAt))
     .orderBy(desc(applications.id));
 
   return (

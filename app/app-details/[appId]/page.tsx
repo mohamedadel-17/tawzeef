@@ -1,5 +1,5 @@
 import { db } from "@/src/db";
-import { jobs, applications } from "@/src/db/schema";
+import { jobs, applications, users } from "@/src/db/schema";
 import { eq } from "drizzle-orm";
 import Analysis from "@/src/models/Analysis";
 import connectMongo from "@/src/lib/mongodb";
@@ -31,12 +31,23 @@ export default async function ApplicationDetailsPage({
     .where(eq(jobs.id, Number(application.jobId)))
     .get();
 
+  const user = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, Number(application.userId)))
+    .get();
+
+  if (!user) {
+    return <div>Error</div>;
+  }
+
   return (
     <div className="p-8 flex flex-col items-center">
       {/* nav bar */}
       <div className="flex justify-between items-center w-full">
-        <div>
+        <div className="space-y-1 mb-4">
           <h1 className="text-3xl font-bold">Application #{appId}</h1>
+          <h3 className="text-xl font-semibold">Job Title: {job?.title}</h3>
           <p className="text-muted-foreground">
             Submitted on: {application.createdAt?.toLocaleDateString()}
           </p>
@@ -47,31 +58,27 @@ export default async function ApplicationDetailsPage({
         />
       </div>
 
-      <Tabs defaultValue="job" className="w-full">
-        <TabsList>
-          <TabsTrigger value="job">Job Details</TabsTrigger>
-          <TabsTrigger value="analysis">AI Analysis</TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="analysis" className="w-full">
+        <div className="w-full flex items-center justify-between">
+          <TabsList>
+            <TabsTrigger value="analysis">AI Analysis</TabsTrigger>
+            <TabsTrigger value="user">User Information</TabsTrigger>
+            <TabsTrigger value="job">Job Details</TabsTrigger>
+          </TabsList>
 
-        {/* Job Details Tab */}
-        <TabsContent value="job" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl">{job?.title}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <p className="font-semibold text-lg text-primary">
-                {job?.companyName}
-              </p>
-              <Badge variant="secondary">{job?.location}</Badge>
-              <p className="mt-4 text-muted-foreground">{job?.description}</p>
-              <div className="pt-4 border-t">
-                <h4 className="font-bold">Requirements:</h4>
-                <p className="text-sm">{job?.requirements}</p>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+          {/* Download CV */}
+          {aiFeedback?.cvUrl && (
+            <Button asChild variant="default" className="mt-2">
+              <a
+                href={aiFeedback.cvUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Open CV
+              </a>
+            </Button>
+          )}
+        </div>
 
         {/* AI Analysis Tab */}
         <TabsContent value="analysis">
@@ -81,12 +88,21 @@ export default async function ApplicationDetailsPage({
                 <CardTitle>AI Insights</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="p-4 bg-muted rounded-lg">
-                  <h4 className="font-bold text-primary">Recommendation</h4>
-                  <p>{aiFeedback.aiFeedback.recommendation}</p>
+                <div>
+                  <h4 className="font-bold text-primary">Summary</h4>
+                  <p>{aiFeedback.aiFeedback.summary}</p>
                 </div>
                 <div>
-                  <h4 className="font-semibold">Strengths</h4>
+                  <h3 className="font-bold text-primary">
+                    Decision: {aiFeedback.aiFeedback.status}
+                  </h3>
+                  <div className="p-4">
+                    <h4 className="font-bold text-primary">Decision Summary</h4>
+                    <p>{aiFeedback.aiFeedback.decisionSummary}</p>
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-green-500">Strengths</h4>
                   <ul className="list-disc pl-5">
                     {aiFeedback.aiFeedback.strengths.map(
                       (s: string, i: number) => (
@@ -105,22 +121,53 @@ export default async function ApplicationDetailsPage({
                     )}
                   </ul>
                 </div>
+                <div className="p-4 bg-secondary rounded-lg">
+                  <h4 className="font-bold text-primary">Improvement Tip</h4>
+                  <p>{aiFeedback.aiFeedback.improvementTip}</p>
+                </div>
               </CardContent>
             </Card>
           ) : (
             <p>No AI analysis found for this application.</p>
           )}
         </TabsContent>
-      </Tabs>
 
-      {/* Download CV */}
-      <div className="w-full">
-        <Button asChild variant="default" className="mt-2">
-          <a href={aiFeedback.cvUrl} target="_blank" download>
-            Download CV
-          </a>
-        </Button>
-      </div>
+        {/* User Information Tab */}
+        <TabsContent value="user" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl">Name: {user.name}</CardTitle>
+              <p className="text-muted-foreground">Email: {user.email}</p>
+            </CardHeader>
+          </Card>
+        </TabsContent>
+
+        {/* Job Details Tab */}
+        <TabsContent value="job" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl">{job?.title}</CardTitle>
+              <div className="flex items-center justify-between gap-4">
+                <p className="text-muted-foreground">Salary: {job?.salary}</p>
+                <Badge className="text-sm">{job?.location}</Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <h4 className="font-bold">Description:</h4>
+              <p className="mt-4 text-muted-foreground">{job?.description}</p>
+              <div className="pt-4 border-t">
+                <h4 className="font-bold">Requirements:</h4>
+                {job?.requirements &&
+                  job.requirements.split("\n").map((line, index) => {
+                    const cleanLine = line.replace(/^[\s-*]+/, "").trim();
+                    if (!cleanLine) return null;
+                    return <p key={index}>• {cleanLine}</p>;
+                  })}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

@@ -24,12 +24,12 @@ export default function UploadCV({ params }: { params: { id: string } }) {
     }
   }, [state]);
 
-
   return (
     <div className="p-8">
       <form action={formAction}>
         <input type="hidden" name="jobId" value={params.id} />
         <Dropzone
+          className="bg-background rounded-md p-4 text-center cursor-pointer"
           accept={{ "application/pdf": [".pdf"] }}
           maxFiles={1}
           onDrop={handleDrop}

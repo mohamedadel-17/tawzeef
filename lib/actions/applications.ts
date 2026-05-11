@@ -4,7 +4,7 @@ import PDFParser from "pdf2json";
 import Groq from "groq-sdk";
 import { db } from "@/src/db";
 import { jobs, users, applications } from "@/src/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { auth } from "@/src/auth";
 import { revalidatePath } from "next/cache";
 import connectDB from "@/src/lib/mongodb";
@@ -25,11 +25,12 @@ export const applyForJobAction = async (prevState: any, formData: FormData) => {
   console.log("⛔️ Full Session User:", session?.user);
   const user = session?.user;
   console.log("⛔️ Check this ID:", session?.user?.id);
-  if (!user || !user.id) {
+  if (!user || !user.id || !user.name) {
     return { error: "You must be logged in to apply for a job" };
   }
   const userIdRaw = user?.id;
   const userId = Number(userIdRaw);
+  const userName = user?.name;
 
   if (!userIdRaw || isNaN(userId)) {
     console.error("⛔️ Error: User ID is missing or invalid. ID:", userIdRaw);
@@ -37,6 +38,21 @@ export const applyForJobAction = async (prevState: any, formData: FormData) => {
   }
   const jobId = parseInt(formData.get("jobId") as string);
 
+  const existingApplication = await db
+    .select()
+    .from(applications)
+    .where(
+      and(
+        eq(applications.jobId, jobId),
+        eq(applications.userId, userId)
+      )
+    )
+    .limit(1);
+
+    if (existingApplication.length > 0) {
+    return { error: "You have already applied for this job" };
+  }
+  
   //* Extract the uploaded file from the form data
   const file = formData.get("cv") as File;
   if (!file || file.size === 0) return { error: "Please upload the file" };
@@ -44,10 +60,18 @@ export const applyForJobAction = async (prevState: any, formData: FormData) => {
 
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
-  // Save CV as pdf on cloudinary
+
+  //* Save CV as pdf on cloudinary
   const result = await new Promise((resolve, reject) => {
     cloudinary.uploader.upload_stream(
-      { resource_type: "raw", folder: "resumes" },
+      {
+        resource_type: "raw",
+        folder: "resumes",
+        public_id: `cv_${userName.replace(/\s+/g, '_')}`,
+        format: "pdf",
+        type: "upload",
+        access_mode: "public"
+      },
       (error: any, result: any) => {
         if (error) reject(error);
         resolve(result);
@@ -121,6 +145,7 @@ export const applyForJobAction = async (prevState: any, formData: FormData) => {
   const [newApplication] = await db.insert(applications).values({
     userId: userId,
     jobId: Number(jobId),
+    cvUrl: fileUrl,
     aiScore: score,
     status: "Under Review"
   }).returning({ insertedId: applications.id });
@@ -134,9 +159,10 @@ export const applyForJobAction = async (prevState: any, formData: FormData) => {
       cvUrl: fileUrl,
       cvText: cvText,
       aiFeedback: {
-        summary: aiResponse.summary,
         strengths: aiResponse.strengths,
         weaknesses: aiResponse.weaknesses,
+        status: aiResponse.status,
+        summary: aiResponse.summary,
         decisionSummary: aiResponse.decisionSummary,
         improvementTip: aiResponse.improvementTip
       },
@@ -172,6 +198,7 @@ export async function getUserApplications() {
     .select({
       id: applications.id,
       jobId: applications.jobId,
+      cvUrl: applications.cvUrl,
       status: applications.status,
       aiScore: applications.aiScore,
       createdAt: applications.createdAt,

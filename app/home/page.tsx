@@ -1,10 +1,10 @@
 import { JobUserCard } from "@/src/components/user/JobUserCard";
 import { db } from "@/src/db";
 import { jobs } from "@/src/db/schema";
-import { desc } from "drizzle-orm";
+import { desc, isNull } from "drizzle-orm";
 
 export default async function HomePage() {
-  const allJobs = await db.select().from(jobs).orderBy(desc(jobs.id));
+  const allJobs = await db.select().from(jobs).where(isNull(jobs.deletedAt)).orderBy(desc(jobs.id));
 
   return (
     <div className="p-8 flex flex-col items-center">

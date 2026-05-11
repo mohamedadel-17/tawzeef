@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
+import { Geist, Geist_Mono, Inter, Rubik_Dirt } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from "sonner";
+import { ThemeProvider } from "@//src/components/theme-provider"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -14,6 +15,12 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const rubikDirt = Rubik_Dirt({
+  variable: "--font-rubik-dirt",
+  subsets: ["latin"],
+  weight: "400"
 });
 
 export const metadata: Metadata = {
@@ -34,13 +41,16 @@ export default function RootLayout({
         "antialiased",
         geistSans.variable,
         geistMono.variable,
+        rubikDirt.variable,
         "font-sans",
         inter.variable,
       )}
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         <main>{children}</main>
         <Toaster richColors position="bottom-left" duration={3000} />
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { db } from "@/src/db";
 import { users } from "@/src/db/schema";
 import { signIn } from "@/src/auth";
+import { signOut } from "@/src/auth";
 
 // signup 
 export async function signupAction(prevState: any, formData: FormData) {
@@ -56,3 +57,9 @@ export async function loginAction(prevState: any, formData: FormData) {
   }
 }
 // end login
+
+// logout 
+export async function handleSignOut() {
+  await signOut({ redirectTo: "/login" });
+}
+// end logout
